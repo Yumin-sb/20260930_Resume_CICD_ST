@@ -3,12 +3,13 @@
 一张**纯静态**的个人简历页。改完 `index.html` 推到 `main`，GitHub Actions 会自动
 **先自检、再发布**——自检不过就不发布。
 
-**双链接（同一份代码，两种部署方式）**
+**双链接（同一份代码，三种部署方式）**
 
 | 链接 | 部署方式 |
 |---|---|
-| https://yumin-sb.github.io/20260930_Resume_CICD_ST/ | GitHub Actions 自动发布（自检通过才上线） |
-| https://4472ee7359a6451eb57429bd38e18c25.app.workbuddy.host | 静态站点托管，作为 CI/CD 之外的镜像入口 |
+| https://yumin-sb.github.io/20260930_Resume_CICD_ST/ | GitHub Actions 自动发布（先自检，通过才上线） |
+| https://chenyingfeng-resume.surge.sh/ | surge 命令行直传（`npx surge`，无检查） |
+| https://4472ee7359a6451eb57429bd38e18c25.app.workbuddy.host | 静态站点托管，备用镜像入口 |
 
 - 仓库：https://github.com/Yumin-sb/20260930_Resume_CICD_ST
 
@@ -74,7 +75,30 @@ push 到 main  ──┐
 详见 [问题记录.md](问题记录.md)。简单说：上一版是把课程模板原样提交的，
 本次重写了页面内容与结构，代码从 730 行压到 386 行，并清掉了模板里不属于本人的信息。
 
-## 六、常见故障排查（本机环境）
+## 六、surge 镜像怎么发（第二条链接）
+
+surge 是"本地文件夹直传"的静态托管：**不做任何检查**，推上去就上线，适合做镜像。
+
+```bash
+# 首次：登录（会问你邮箱和密码，等于同时注册）
+npx surge login
+
+# 之后每次更新内容，重新发一次即可
+npx surge --project . --domain chenyingfeng-resume.surge.sh
+```
+
+两个坑：
+
+1. **surge 会在项目根目录生成 `CNAME` 文件**（内容是 surge 域名）。
+   在 GitHub Pages 的仓库里提交它，Pages 会误以为你配了自定义域名，`github.io` 地址会失效。
+   本项目已把它写进 `.gitignore`，**不要提交**。
+2. **首次发布后 90 分钟内要验证邮箱**，否则域名会被收回。
+   没收到邮件就跑 `npx surge verify` 重发，然后去邮箱点链接。
+
+> `npx` 在本机默认会因 npm 缓存目录无写权限而失败，先设一句：
+> `set npm_config_cache=%LOCALAPPDATA%\npm-cache`（CMD）。
+
+## 七、常见故障排查（本机环境）
 
 ### 1. `git push` 报 `Failed to connect to github.com port 443`
 
@@ -104,7 +128,7 @@ curl --ssl-no-revoke https://api.github.com/user
 env -u http_proxy -u https_proxy -u HTTP_PROXY -u HTTPS_PROXY git push
 ```
 
-## 七、许可与来源
+## 八、许可与来源
 
 页面结构与样式来自课程模板仓库 `02-gdit-ffd-20260818/ffd-student-course-kit`（分支 `p1-final-resume`），
 在此基础上按个人情况重写。字体为思源宋体（SIL OFL，见 `assets/OFL-NotoSerifSC.txt`）。
