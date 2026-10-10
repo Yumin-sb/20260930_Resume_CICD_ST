@@ -3,7 +3,13 @@
 一张**纯静态**的个人简历页。改完 `index.html` 推到 `main`，GitHub Actions 会自动
 **先自检、再发布**——自检不过就不发布。
 
-- 线上地址（GitHub Pages）：https://yumin-sb.github.io/20260930_Resume_CICD_ST/
+**双链接（同一份代码，两种部署方式）**
+
+| 链接 | 部署方式 |
+|---|---|
+| https://yumin-sb.github.io/20260930_Resume_CICD_ST/ | GitHub Actions 自动发布（自检通过才上线） |
+| https://4472ee7359a6451eb57429bd38e18c25.app.workbuddy.host | 静态站点托管，作为 CI/CD 之外的镜像入口 |
+
 - 仓库：https://github.com/Yumin-sb/20260930_Resume_CICD_ST
 
 ---
@@ -68,7 +74,37 @@ push 到 main  ──┐
 详见 [问题记录.md](问题记录.md)。简单说：上一版是把课程模板原样提交的，
 本次重写了页面内容与结构，代码从 730 行压到 386 行，并清掉了模板里不属于本人的信息。
 
-## 六、许可与来源
+## 六、常见故障排查（本机环境）
+
+### 1. `git push` 报 `Failed to connect to github.com port 443`
+
+本机 DNS 把 `github.com` 解析到了连不通的地址（解析结果是 `20.205.243.166`，实测超时）。
+实测可用的真实 IP：`140.82.112.3`、`140.82.113.4`。
+
+本仓库已经把可用 IP 写进本地 git 配置，直接 `git push` 就行。换网络后万一又失败，
+重新执行一次这条命令即可：
+
+```bash
+git config --local http.curloptResolve github.com:443:140.82.112.3
+```
+
+### 2. `curl` 报 `schannel: CRYPT_E_NO_REVOCATION_CHECK`
+
+本机用 Windows 证书链，吊销状态检查会超时。给 curl 加 `--ssl-no-revoke` 即可：
+
+```bash
+curl --ssl-no-revoke https://api.github.com/user
+```
+
+### 3. 命令里被注入了代理，GitHub 返回 502
+
+报错形如 `CONNECT tunnel failed, response 502`。先把代理环境变量清掉再执行：
+
+```bash
+env -u http_proxy -u https_proxy -u HTTP_PROXY -u HTTPS_PROXY git push
+```
+
+## 七、许可与来源
 
 页面结构与样式来自课程模板仓库 `02-gdit-ffd-20260818/ffd-student-course-kit`（分支 `p1-final-resume`），
 在此基础上按个人情况重写。字体为思源宋体（SIL OFL，见 `assets/OFL-NotoSerifSC.txt`）。
